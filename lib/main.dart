@@ -44,11 +44,13 @@ class ShopLink {
 class Part {
   const Part({
     required this.name,
+    required this.priceMad,
     required this.compatible,
     required this.shops,
   });
 
   final String name;
+  final double priceMad;
   final bool compatible;
   final List<ShopLink> shops;
 }
@@ -84,6 +86,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
   final List<Part> _parts = const <Part>[
     Part(
       name: 'CPU: AMD Ryzen 5 5600',
+      priceMad: 1350,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'SetupGame.ma', url: 'https://www.google.com/search?q=site:setupgame.ma+AMD+Ryzen+5+5600'),
@@ -92,6 +95,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'GPU: AMD Radeon RX 6600 8GB',
+      priceMad: 2550,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'CasaConfig.ma', url: 'https://www.google.com/search?q=site:casaconfig.ma+RX+6600+8GB'),
@@ -100,6 +104,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'RAM: 16GB (2x8GB) DDR4 3200MHz CL16',
+      priceMad: 550,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'UltraPC.ma', url: 'https://www.google.com/search?q=site:ultrapc.ma+16GB+2x8+3200+CL16'),
@@ -108,6 +113,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'Motherboard: MSI B550M PRO-VDH',
+      priceMad: 1300,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'SetupGame.ma', url: 'https://www.google.com/search?q=site:setupgame.ma+MSI+B550M+PRO-VDH'),
@@ -116,6 +122,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'Storage: 512GB NVMe SSD',
+      priceMad: 450,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'UltraPC.ma', url: 'https://www.google.com/search?q=site:ultrapc.ma+512GB+NVMe+SSD'),
@@ -124,6 +131,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'PSU: 550W 80+ Bronze',
+      priceMad: 500,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'UltraPC.ma', url: 'https://www.google.com/search?q=site:ultrapc.ma+550W+80+Bronze+PSU'),
@@ -132,6 +140,7 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     ),
     Part(
       name: 'Case: Micro-ATX Case',
+      priceMad: 500,
       compatible: true,
       shops: <ShopLink>[
         ShopLink(name: 'UltraPC.ma', url: 'https://www.google.com/search?q=site:ultrapc.ma+Micro-ATX+Case'),
@@ -239,6 +248,22 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
     );
   }
 
+  Future<void> _buyPart(Part part) async {
+    if (_currentMoney < part.priceMad) {
+      final double missing = (part.priceMad - _currentMoney).clamp(0, part.priceMad);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Need ${missing.toStringAsFixed(0)} MAD more for ${part.name}.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    await _launchUrl(part.shops.first.url);
+  }
+
   @override
   Widget build(BuildContext context) {
     final double progress = (_currentMoney / _goal).clamp(0, 1);
@@ -328,7 +353,9 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
             return Card(
               child: ExpansionTile(
                 title: Text(part.name),
-                subtitle: Text(part.compatible ? 'Compatibility: Works together' : 'Compatibility: Mismatch'),
+                subtitle: Text(
+                  '${part.compatible ? 'Compatibility: Works together' : 'Compatibility: Mismatch'} • ${part.priceMad.toStringAsFixed(0)} MAD',
+                ),
                 trailing: Icon(
                   part.compatible ? Icons.check_circle : Icons.cancel,
                   color: part.compatible ? Colors.greenAccent : Colors.redAccent,
@@ -346,6 +373,21 @@ class _HardBuyHomePageState extends State<HardBuyHomePage> {
                           label: Text(shop.name),
                         );
                       }).toList(),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _currentMoney >= part.priceMad ? () => _buyPart(part) : null,
+                        icon: const Icon(Icons.shopping_bag),
+                        label: Text(
+                          _currentMoney >= part.priceMad
+                              ? 'Buy this part now'
+                              : 'Need ${(part.priceMad - _currentMoney).clamp(0, part.priceMad).toStringAsFixed(0)} MAD more',
+                        ),
+                      ),
                     ),
                   ),
                 ],

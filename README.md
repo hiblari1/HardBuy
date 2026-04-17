@@ -19,6 +19,7 @@ HardBuy is a Material 3 expressive Flutter app that tracks your progress in **MA
   - Micro-ATX Case
 - Moroccan shop lookup buttons for each part (SetupGame.ma, UltraPC.ma, CasaConfig.ma, Crenova.ma).
 - Compatibility status per part.
+- Per-part MAD target prices with a "Buy this part now" button that unlocks once your saved money reaches that part's price.
 - Peripherals section with recommended keyboard, mouse, and performance-first monitor.
 - "Preview full build in 3D" quick action.
 - "Buy now" button that intentionally warns and does not auto-checkout for safety.
