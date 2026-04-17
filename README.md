@@ -55,3 +55,8 @@ It builds and uploads these artifacts:
 - Linux AppImage
 
 Trigger it manually with `workflow_dispatch` or by pushing to `main`.
+
+## Merge conflict guard
+
+A second workflow `.github/workflows/conflict_guard.yml` blocks merges if conflict markers
+(`<<<<<<<`, `=======`, `>>>>>>>`) are still present in app files.

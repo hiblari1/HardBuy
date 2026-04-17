@@ -1,0 +1,21 @@
+name: Conflict marker guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - work
+
+jobs:
+  detect-conflict-markers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if merge conflict markers exist
+        run: |
+          if rg -n "^(<<<<<<<|=======|>>>>>>>)" README.md lib/main.dart pubspec.yaml .github/workflows; then
+            echo "Merge conflict markers found. Resolve conflicts before merging."
+            exit 1
+          fi
+          echo "No conflict markers found."
