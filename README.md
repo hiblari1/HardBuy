@@ -63,3 +63,14 @@ Trigger it manually with `workflow_dispatch` or by pushing to `main`.
 
 A second workflow `.github/workflows/conflict_guard.yml` blocks merges if conflict markers
 (`<<<<<<<`, `=======`, `>>>>>>>`) are present anywhere in the repository.
+
+## Quick conflict helper (less typing)
+
+If you are merging on a low-input device, use:
+
+```bash
+./scripts/resolve_conflicts.sh incoming
+```
+
+That keeps incoming changes for `README.md` and `lib/main.dart`, stages them, and verifies
+there are no leftover conflict markers.
