@@ -29,3 +29,94 @@ jobs:
         with:
           name: hardbuy-android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hardbuy-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  windows_exe:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - run: |
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath hardbuy-windows-release.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hardbuy-windows-exe-bundle
+          path: hardbuy-windows-release.zip
+
+  macos_dmg:
+    name: macOS DMG
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter config --enable-macos-desktop
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - run: |
+          brew install create-dmg
+          mkdir -p dmg_payload
+          cp -R build/macos/Build/Products/Release/hardbuy.app dmg_payload/HardBuy.app
+          create-dmg \
+            --volname "HardBuy" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --app-drop-link 600 185 \
+            hardbuy-macos.dmg \
+            dmg_payload/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hardbuy-macos-dmg
+          path: hardbuy-macos.dmg
+
+  linux_appimage:
+    name: Linux AppImage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter config --enable-linux-desktop
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          mkdir -p AppDir/usr/bin AppDir/usr/lib AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+          cat > AppDir/hardbuy.desktop <<DESKTOP
+          [Desktop Entry]
+          Type=Application
+          Name=HardBuy
+          Exec=hardbuy
+          Icon=hardbuy
+          Categories=Utility;
+          DESKTOP
+          cp AppDir/hardbuy.desktop AppDir/usr/share/applications/hardbuy.desktop
+          cat > AppDir/AppRun <<'APP'
+          #!/usr/bin/env bash
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/hardbuy" "$@"
+          APP
+          chmod +x AppDir/AppRun
+          ./appimagetool AppDir hardbuy-linux-x86_64.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hardbuy-linux-appimage
+          path: hardbuy-linux-x86_64.AppImage

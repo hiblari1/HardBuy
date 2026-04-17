@@ -43,6 +43,7 @@ flutter run
 Flutter supports Android, Linux, macOS, and Windows from a single codebase. Packaging (including Linux AppImage) can be added during CI/release setup.
 
 ## CI workflow for release artifacts (Android for now)
+## CI workflow for release artifacts
 
 GitHub Actions workflow added at:
 
@@ -55,6 +56,12 @@ It currently builds and uploads:
 To avoid Gradle layout errors on CI for this lightweight repo setup, the workflow runs:
 
 - `flutter create --platforms=android --project-name hardbuy --overwrite .`
+It builds and uploads these artifacts:
+
+- Android APK
+- Windows EXE bundle (`.zip`)
+- macOS DMG
+- Linux AppImage
 
 Trigger it manually with `workflow_dispatch` or by pushing to `main`.
 
